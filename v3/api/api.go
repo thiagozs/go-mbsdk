@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -12,16 +13,16 @@ import (
 	"github.com/thiagozs/go-mbsdk/v3/models"
 )
 
-type Typo int
+type Type int
 
 const (
-	Ticker Typo = iota
+	Ticker Type = iota
 	OrderBook
 	Trades
 	DaySummary
 )
 
-func (m Typo) String() string {
+func (m Type) String() string {
 	return [...]string{
 		"ticker",
 		"orderbook",
@@ -36,11 +37,11 @@ var (
 )
 
 type Params struct {
-	ExternalUrl  string   `json:"external"`
-	Coin         string   `json:"coin"`
-	Path         string   `json:"path"`
-	Methods      *Methods `json:"methods"`
-	HttpRetryMax int      `json:"http_maxretry"`
+	ExternalUrl  string        `json:"external"`
+	Coin         string        `json:"coin"`
+	Path         string        `json:"path"`
+	Options      []MethodsOpts `json:"options"`
+	HttpRetryMax int           `json:"http_maxretry"`
 }
 
 type Api struct {
@@ -54,29 +55,34 @@ type Api struct {
 func New(params Params) *Api {
 	var urlBuilder string
 
+	methods, err := NewMethods(params.Options...)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	res0 := strings.Replace(path, "{url}", api_base, -1)
 	if len(params.ExternalUrl) > 0 {
 		res0 = strings.Replace(api_base, "{url}", params.ExternalUrl, -1)
 	}
 	res1 := strings.Replace(res0, "{coin}", params.Coin, -1)
-	urlBuilder = strings.Replace(res1, "{method}", params.Methods.Typo().String(), -1)
+	urlBuilder = strings.Replace(res1, "{method}", methods.GetType().String(), -1)
 
-	switch params.Methods.Typo() {
+	switch methods.GetType() {
 	case Trades:
-		if params.Methods.From() > 0 && params.Methods.To() == 0 {
-			urlBuilder = fmt.Sprintf("%s%d/", urlBuilder, params.Methods.From())
-		} else if params.Methods.From() > 0 && params.Methods.To() > 0 {
-			urlBuilder = fmt.Sprintf("%s%d/%d/", urlBuilder, params.Methods.From(), params.Methods.To())
+		if methods.GetFrom() > 0 && methods.GetTo() == 0 {
+			urlBuilder = fmt.Sprintf("%s%d/", urlBuilder, methods.GetFrom())
+		} else if methods.GetFrom() > 0 && methods.GetTo() > 0 {
+			urlBuilder = fmt.Sprintf("%s%d/%d/", urlBuilder, methods.GetFrom(), methods.GetTo())
 		}
 	case DaySummary:
-		urlBuilder = fmt.Sprintf("%s%d/%d/%d/", urlBuilder, params.Methods.Year(), params.Methods.Month(), params.Methods.Day())
+		urlBuilder = fmt.Sprintf("%s%d/%d/%d/", urlBuilder, methods.GetYear(), methods.GetMonth(), methods.GetDay())
 	}
 
 	return &Api{
 		ExternalUrl:  params.ExternalUrl,
 		Coin:         params.Coin,
 		Url:          urlBuilder,
-		Methods:      params.Methods,
+		Methods:      methods,
 		HttpRetryMax: params.HttpRetryMax,
 	}
 }

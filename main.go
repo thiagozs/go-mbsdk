@@ -8,9 +8,12 @@ import (
 )
 
 func main() {
+
 	req := api.New(api.Params{
-		Coin:         "BTC",
-		Methods:      api.NewMethods(0, 0, 0, 0, 0, api.Ticker),
+		Coin: "BTC",
+		Options: []api.MethodsOpts{
+			api.OptsType(api.Ticker),
+		},
 		HttpRetryMax: 3,
 	})
 
@@ -20,5 +23,4 @@ func main() {
 	}
 
 	fmt.Printf("%+v\n", res)
-
 }
