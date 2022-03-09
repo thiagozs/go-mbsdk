@@ -1,2 +1,5 @@
 .envrc
 .envrc_bkp
+
+settings
+settings/cache.db

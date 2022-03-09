@@ -24,12 +24,29 @@ if err != nil {
 	fmt.Println(err)
 }
 
+// step 1 - get all authorization (mandatory)
 if auth, err := a.AuthorizationToken(); err != nil {
 	fmt.Println(err)
 } else {
 	fmt.Println(auth)
 }
 
+// step 2 - run the account function to get all info (mandatory)
+if acc, err := a.GetAccounts(); err != nil {
+	fmt.Println(err)
+} else {
+	fmt.Println(acc)
+}
+
+// step 3 - run others methods, before that, you need 
+// run the function account to get all information
+if balances, err := a.GetBalances(); err != nil {
+	fmt.Println(err)
+} else {
+	fmt.Println(balances)
+}
+
+// step 4 - publics endpoints
 if ticker, err := a.Tickers("BTC-BRL"); err != nil {
 	fmt.Println(err)
 } else {

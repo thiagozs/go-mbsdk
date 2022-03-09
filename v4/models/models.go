@@ -32,9 +32,10 @@ type TickersResponse []struct {
 }
 
 type GetBalancesResponse []struct {
-	Available json.Number `json:"available"`
-	Symbol    string      `json:"symbol"`
-	Total     json.Number `json:"total"`
+	Available string `json:"available"`
+	OnHold    string `json:"on_hold"`
+	Symbol    string `json:"symbol"`
+	Total     string `json:"total"`
 }
 
 type PlaceOrderPayload struct {

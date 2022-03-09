@@ -9,7 +9,6 @@ import (
 	"github.com/google/go-querystring/query"
 	"github.com/thiagozs/go-mbsdk/v4/config"
 	"github.com/thiagozs/go-mbsdk/v4/models"
-	"github.com/thiagozs/go-mbsdk/v4/pkg/cache"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/caller"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/replacer"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/utils"
@@ -27,13 +26,9 @@ func New(opts ...Options) (*Api, error) {
 	}
 	config.Config.Login = mts.key
 	config.Config.Password = mts.secret
+	config.Config.Cache = mts.cache
 
-	c, err := cache.NewCache()
-	if err != nil {
-		return nil, err
-	}
-
-	return &Api{c}, nil
+	return &Api{mts.cache}, nil
 }
 
 func (a *Api) AuthorizationToken() (models.AuthoritionToken, error) {
@@ -140,17 +135,14 @@ func (a *Api) GetAccounts() (models.GetAccountsResponse, error) {
 	return acc, nil
 }
 
-func (a *Api) GetBalances(symbol string) (models.GetBalancesResponse, error) {
+func (a *Api) GetBalances() (models.GetBalancesResponse, error) {
 	balances := models.GetBalancesResponse{}
 	c, err := caller.ClientWithToken(http.MethodGet, a.cache)
 	if err != nil {
 		return balances, err
 	}
 
-	pair, _ := utils.PairQuote(symbol)
-
 	endpoint, err := replacer.Endpoint(replacer.OptKey("BALANCE_LIST"),
-		replacer.OptPair(pair),
 		replacer.OptCache(a.cache),
 	)
 	if err != nil {
@@ -161,6 +153,8 @@ func (a *Api) GetBalances(symbol string) (models.GetBalancesResponse, error) {
 	if err != nil {
 		return balances, err
 	}
+
+	fmt.Printf("result = %s\n", bts)
 
 	if err := json.Unmarshal(bts, &balances); err != nil {
 		return balances, err
