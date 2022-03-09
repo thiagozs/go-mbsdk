@@ -39,12 +39,13 @@ type GetBalancesResponse []struct {
 }
 
 type PlaceOrderPayload struct {
-	Async      bool    `json:"async,omitempty"`
-	Cost       int     `json:"cost,omitempty"`
-	LimitPrice int     `json:"limitPrice,omitempty"`
-	Qty        float64 `json:"qty,omitempty"`
-	Side       string  `json:"side,omitempty"`
-	Type       string  `json:"type,omitempty"`
+	Async      bool   `json:"async,omitempty"`
+	Cost       int    `json:"cost,omitempty"`
+	LimitPrice int    `json:"limitPrice,omitempty"`
+	Qty        string `json:"qty,omitempty"`
+	Side       string `json:"side,omitempty"`
+	StopPrice  int    `json:"stopPrice,omitempty"`
+	Type       string `json:"type,omitempty"`
 }
 
 func (p *PlaceOrderPayload) ToBytes() []byte {
@@ -108,4 +109,13 @@ func (p *ErrorPlaceOrderResponse) ToBytes() []byte {
 		panic(err)
 	}
 	return bts
+}
+
+type CustomPlaceOrderInfo struct {
+	StatusCode int    `json:"status_code"`
+	OrderID    string `json:"order_id"`
+	Payload    string `json:"payload"`
+	Response   string `json:"response"`
+	EndPoint   string `json:"endpoint"`
+	Error      error  `json:"error"`
 }

@@ -4,6 +4,19 @@ import (
 	"github.com/thiagozs/go-mbsdk/v4/pkg/cache"
 )
 
+type Kind int
+
+const (
+	BUY Kind = iota
+	SELL
+	STOP_BUY
+	STOP_SELL
+)
+
+func (k Kind) String() string {
+	return [...]string{"buy", "sell", "buy", "sell"}[k]
+}
+
 type Api struct {
 	cache *cache.Cache
 }
