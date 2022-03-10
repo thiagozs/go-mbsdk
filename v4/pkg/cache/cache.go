@@ -10,13 +10,13 @@ type Cache struct {
 	cache cache.CachePort
 }
 
-func NewCache() (*Cache, error) {
+func NewCache(logDebug, logDisable bool) (*Cache, error) {
 	opts := []options.Options{
 		options.OptFolder("./settings"),
 		options.OptFileName("cache.db"),
 		options.OptTTL(3000),
-		options.OptLogDebug(false),
-		options.OptLogDisable(false),
+		options.OptLogDebug(logDebug),
+		options.OptLogDisable(logDisable),
 	}
 
 	cache, err := cache.New(drivers.BUNTDB, opts...)

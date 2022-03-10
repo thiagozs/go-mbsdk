@@ -30,6 +30,7 @@ func New(opts ...Options) (*Api, error) {
 	config.Config.Login = mts.key
 	config.Config.Password = mts.secret
 	config.Config.Cache = mts.cache
+	config.Config.Debug = mts.debug
 
 	return &Api{mts.cache}, nil
 }

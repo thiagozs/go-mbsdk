@@ -13,7 +13,7 @@ func main() {
 	key := os.Getenv("MB_KEY")
 	secret := os.Getenv("MB_SECRET")
 
-	c, err := cache.NewCache()
+	c, err := cache.NewCache(false, true)
 	if err != nil {
 		log.Fatal(err)
 	}
