@@ -92,5 +92,9 @@ func Endpoint(opts ...Options) (string, error) {
 		endpoint = strings.ReplaceAll(endpoint, "https://api.mercadobitcoin.net", os.Getenv("MB_ENDPOINT"))
 	}
 
+	if config.Config.Debug {
+		fmt.Println("endpoint:", endpoint)
+	}
+
 	return endpoint, nil
 }
