@@ -3,6 +3,7 @@ package replacer
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/thiagozs/go-mbsdk/v4/config"
@@ -85,6 +86,10 @@ func Endpoint(opts ...Options) (string, error) {
 	if strings.Contains(endpoint, "{orderId}") {
 		val, _ := mts.cache.GetKeyVal(mts.priceIn)
 		endpoint = strings.ReplaceAll(endpoint, "{orderId}", val)
+	}
+
+	if len(os.Getenv("MB_ENDPOINT")) > 0 {
+		endpoint = strings.ReplaceAll(endpoint, "https://api.mercadobitcoin.net", os.Getenv("MB_ENDPOINT"))
 	}
 
 	return endpoint, nil
