@@ -202,8 +202,10 @@ func (a *Api) GetOrderInfo(symbol, price string) (models.GetOrderResponse, error
 func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) models.CustomPlaceOrderInfo {
 	orderInfo := models.CustomPlaceOrderInfo{}
 	order := models.PlaceOrderPayload{Async: true, Type: "limit"}
-	price := decimal.RequireFromString(priceIn)
-	pricestop := decimal.RequireFromString(pricestopIn)
+
+	price, _ := decimal.NewFromString(priceIn)
+
+	pricestop, _ := decimal.NewFromString(pricestopIn)
 
 	cutPrice := strings.Split(price.String(), ".")
 	limitPrice, _ := strconv.ParseInt(cutPrice[0], 10, 64)
@@ -223,7 +225,10 @@ func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) mo
 		order.StopPrice = int(cutPriceStop)
 	}
 
-	order.LimitPrice = int(limitPrice)
+	if price.GreaterThan(decimal.RequireFromString("0")) {
+		order.LimitPrice = int(limitPrice)
+	}
+
 	order.Qty = qty
 
 	c, err := caller.ClientWithToken(http.MethodPost, a.cache)
