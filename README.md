@@ -2,7 +2,7 @@
 
 Easy way to consume the public api informations from MercadoBitcoin
 
-## API v4 (new)
+## API v4 (new - working in progress)
 
 ```golang
 key := os.Getenv("MB_KEY")
