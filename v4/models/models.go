@@ -31,7 +31,7 @@ type TickersResponse []struct {
 	Vol  string `json:"vol"`
 }
 
-type GetBalancesResponse []struct {
+type ListBalancesResponse []struct {
 	Available string `json:"available"`
 	OnHold    string `json:"on_hold"`
 	Symbol    string `json:"symbol"`
@@ -68,29 +68,7 @@ func (p *PlaceOrderResponse) ToBytes() []byte {
 	return bts
 }
 
-type GetOrderResponse struct {
-	AvgPrice   int `json:"avgPrice"`
-	CreatedAt  int `json:"created_at"`
-	Executions []struct {
-		ExecutedAt int         `json:"executed_at"`
-		ID         string      `json:"id"`
-		Instrument string      `json:"instrument"`
-		Price      int         `json:"price"`
-		Qty        json.Number `json:"qty"`
-		Side       string      `json:"side"`
-	} `json:"executions"`
-	FilledQty  json.Number `json:"filledQty"`
-	ID         string      `json:"id"`
-	Instrument string      `json:"instrument"`
-	LimitPrice int         `json:"limitPrice"`
-	Qty        json.Number `json:"qty"`
-	Side       string      `json:"side"`
-	Status     string      `json:"status"`
-	Type       string      `json:"type"`
-	UpdatedAt  int         `json:"updated_at"`
-}
-
-type GetAccountsResponse []struct {
+type ListAccountsResponse []struct {
 	Currency     string `json:"currency"`
 	CurrencySign string `json:"currencySign"`
 	ID           string `json:"id"`
@@ -118,4 +96,41 @@ type CustomPlaceOrderInfo struct {
 	Response   string `json:"response"`
 	EndPoint   string `json:"endpoint"`
 	Error      error  `json:"error"`
+}
+
+type ListPositionResponse []struct {
+	AvgPrice   int    `json:"avgPrice"`
+	Category   string `json:"category"`
+	ID         string `json:"id"`
+	Instrument string `json:"instrument"`
+	Qty        string `json:"qty"`
+	Side       string `json:"side"`
+}
+
+type ListOrderResponse []GetOrderResponse
+
+type GetOrderResponse struct {
+	AvgPrice   int `json:"avgPrice"`
+	CreatedAt  int `json:"created_at"`
+	Executions []struct {
+		ExecutedAt int    `json:"executed_at"`
+		FeeRate    string `json:"fee_rate"`
+		ID         string `json:"id"`
+		Instrument string `json:"instrument"`
+		Price      int    `json:"price"`
+		Qty        string `json:"qty"`
+		Side       string `json:"side"`
+	} `json:"executions"`
+	Fee            string `json:"fee"`
+	FilledQty      string `json:"filledQty"`
+	ID             string `json:"id"`
+	Instrument     string `json:"instrument"`
+	LimitPrice     int    `json:"limitPrice"`
+	Qty            string `json:"qty"`
+	Side           string `json:"side"`
+	Status         string `json:"status"`
+	StopPrice      int    `json:"stopPrice"`
+	TriggerOrderID string `json:"triggerOrderId"`
+	Type           string `json:"type"`
+	UpdatedAt      int    `json:"updated_at"`
 }

@@ -3,7 +3,6 @@ package replacer
 import (
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/thiagozs/go-mbsdk/v4/config"
@@ -19,6 +18,7 @@ type OptionsCfg struct {
 	key     string
 	pair    string
 	orderId string
+	params  string
 }
 
 func OptCache(cache *cache.Cache) Options {
@@ -56,6 +56,13 @@ func OptOrderId(orderId string) Options {
 	}
 }
 
+func OptParams(params string) Options {
+	return func(o *OptionsCfg) error {
+		o.params = params
+		return nil
+	}
+}
+
 func Endpoint(opts ...Options) (string, error) {
 	mts := &OptionsCfg{}
 	for _, op := range opts {
@@ -72,7 +79,7 @@ func Endpoint(opts ...Options) (string, error) {
 
 	if strings.Contains(endpoint, "{accountId}") {
 		val, _ := mts.cache.GetKeyVal(config.ACCOUNTS.String())
-		acc := models.GetAccountsResponse{}
+		acc := models.ListAccountsResponse{}
 		if err := json.Unmarshal([]byte(val), &acc); err != nil {
 			return "", err
 		}
@@ -88,8 +95,12 @@ func Endpoint(opts ...Options) (string, error) {
 		endpoint = strings.ReplaceAll(endpoint, "{orderId}", val)
 	}
 
-	if len(os.Getenv("MB_ENDPOINT")) > 0 {
-		endpoint = strings.ReplaceAll(endpoint, "https://api.mercadobitcoin.net", os.Getenv("MB_ENDPOINT"))
+	if len(config.Config.Endpoint) > 0 {
+		endpoint = strings.ReplaceAll(endpoint, "https://api.mercadobitcoin.net", config.Config.Endpoint)
+	}
+
+	if len(mts.params) > 0 {
+		endpoint = fmt.Sprintf("%s?%s", endpoint, mts.params)
 	}
 
 	if config.Config.Debug {

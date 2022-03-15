@@ -24,10 +24,11 @@ type Api struct {
 type Options func(o *ApiCfg) error
 
 type ApiCfg struct {
-	cache  *cache.Cache
-	key    string
-	secret string
-	debug  bool
+	cache    *cache.Cache
+	key      string
+	secret   string
+	debug    bool
+	endpoint string
 }
 
 func OptCache(cache *cache.Cache) Options {
@@ -54,6 +55,13 @@ func OptSecret(secret string) Options {
 func OptDebug(on bool) Options {
 	return func(a *ApiCfg) error {
 		a.debug = on
+		return nil
+	}
+}
+
+func OptEndpoint(endpoint string) Options {
+	return func(a *ApiCfg) error {
+		a.endpoint = endpoint
 		return nil
 	}
 }
