@@ -134,3 +134,13 @@ type GetOrderResponse struct {
 	Type           string `json:"type"`
 	UpdatedAt      int    `json:"updated_at"`
 }
+
+type OrdersIndex struct {
+	ID     string `json:"id"`
+	Symbol string `json:"symbol"`
+	Side   string `json:"side"`
+	Type   string `json:"type"`
+	Price  string `json:"price"`
+}
+
+type OrdersIndexResponse []OrdersIndex

@@ -159,7 +159,13 @@ func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) mo
 		return orderInfo
 	}
 
-	if err := a.SetOrder(cutPrice[0], respOrder.OrderID); err != nil {
+	if err := a.SetOrder(models.OrdersIndex{
+		Symbol: symbol,
+		ID:     respOrder.OrderID,
+		Price:  price.String(),
+		Side:   order.Side,
+		Type:   order.Type,
+	}); err != nil {
 		orderInfo.Error = err
 		return orderInfo
 	}

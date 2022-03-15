@@ -8,10 +8,11 @@ const (
 	ACCOUNTS CacheT = iota
 	AUTHORIZE
 	BALANCE
+	ORDERS_INDEX
 )
 
 func (c CacheT) String() string {
-	return [...]string{"ACCOUNTS", "AUTHORIZE", "BALANCE"}[c]
+	return [...]string{"ACCOUNTS", "AUTHORIZE", "BALANCE", "ORDERS_INDEX"}[c]
 }
 
 var EndPoints = map[string]string{
