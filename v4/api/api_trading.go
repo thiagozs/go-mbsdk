@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/shopspring/decimal"
+	"github.com/thiagozs/go-mbsdk/v4/config"
 	"github.com/thiagozs/go-mbsdk/v4/models"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/caller"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/replacer"
@@ -176,9 +177,7 @@ func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) mo
 	return orderInfo
 }
 
-func (a *Api) CancelOrder(symbol string, price string) error {
-
-	cutPrice := strings.Split(price, ".")
+func (a *Api) CancelOrder(symbol string, id string) error {
 
 	c, err := caller.ClientWithToken(http.MethodDelete, a.cache)
 	if err != nil {
@@ -187,8 +186,9 @@ func (a *Api) CancelOrder(symbol string, price string) error {
 
 	endpoint, err := replacer.Endpoint(replacer.OptKey("ORDER_CANCEL"),
 		replacer.OptPair(symbol),
-		replacer.OptPriceIn(cutPrice[0]),
-		replacer.OptCache(a.cache))
+		replacer.OptCache(a.cache),
+		replacer.OptOrderId(id),
+	)
 	if err != nil {
 		return err
 	}
@@ -203,8 +203,18 @@ func (a *Api) CancelOrder(symbol string, price string) error {
 
 func (a *Api) CancelAllOrders(symbol string, prices []string) error {
 
-	for _, v := range prices {
-		if err := a.CancelOrder(symbol, v); err != nil {
+	val, err := a.cache.GetKeyVal(config.ORDERS_INDEX.String())
+	if err != nil {
+		return err
+	}
+
+	ordersIndex := []models.OrdersIndex{}
+	if err := json.Unmarshal([]byte(val), &ordersIndex); err != nil {
+		return err
+	}
+
+	for _, v := range ordersIndex {
+		if err := a.CancelOrder(symbol, v.ID); err != nil {
 			return err
 		}
 	}
