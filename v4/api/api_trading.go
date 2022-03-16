@@ -31,7 +31,7 @@ type PlaceOrdersPameters struct {
 	Quantity  string
 }
 
-func PoSimbol(value string) PlaceOrdersParams {
+func PoSymbol(value string) PlaceOrdersParams {
 	return func(a *PlaceOrdersPameters) error {
 		a.Symbol = value
 		return nil
