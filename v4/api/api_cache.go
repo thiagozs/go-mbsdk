@@ -19,20 +19,22 @@ func (a *Api) SetAuthorize(auth models.AuthoritionToken) error {
 	return a.cache.SetKeyValAsJSON(config.AUTHORIZE.String(), auth)
 }
 
-func (a *Api) SetOrder(order []models.OrdersIndex) error {
+func (a *Api) SetOrder(orderIn []models.OrdersIndex) error {
 
 	orders := []models.OrdersIndex{}
 
 	val, err := a.cache.GetKeyVal(config.ORDERS_INDEX.String())
-	if err != nil {
+	if err != nil && err.Error() != "not found" {
 		return err
 	}
 
-	if err := json.Unmarshal([]byte(val), &orders); err != nil {
-		return err
+	if len(val) > 0 {
+		if err := json.Unmarshal([]byte(val), &orders); err != nil {
+			return err
+		}
 	}
 
-	orders = append(orders, order...)
+	orders = append(orders, orderIn...)
 
 	return a.cache.SetKeyValAsJSON(config.ORDERS_INDEX.String(), orders)
 }

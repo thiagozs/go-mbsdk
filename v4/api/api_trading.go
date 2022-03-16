@@ -366,7 +366,6 @@ func (a *Api) ListOrders(symbol string, opts ...OrdersParams) (models.ListOrderR
 
 	// gen parametes
 	v, _ := query.Values(params)
-
 	endpoint, err := replacer.Endpoint(replacer.OptKey("ORDER_LIST"),
 		replacer.OptSymbol(symbol),
 		replacer.OptCache(a.cache),

@@ -5,6 +5,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"runtime"
+	"strconv"
+	"strings"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
@@ -25,11 +28,23 @@ func New(opts ...Options) (*Api, error) {
 		}
 	}
 
+	pc, file, line, ok := runtime.Caller(1)
+	if !ok {
+		panic("Could not get context info for logger!")
+	}
+
+	filename := file[strings.LastIndex(file, "/")+1:] + ":" + strconv.Itoa(line)
+	funcname := runtime.FuncForPC(pc).Name()
+	fn := funcname[strings.LastIndex(funcname, ".")+1:]
+
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 
-	log := zerolog.New(os.Stderr).With().Timestamp().Logger()
+	log := zerolog.New(os.Stderr).With().
+		Str("file_name", filename).
+		Str("function_name", fn).
+		Timestamp().Logger()
 
 	config.Config.Login = mts.key
 	config.Config.Password = mts.secret
@@ -44,6 +59,9 @@ func (a *Api) AuthorizationToken() (models.AuthoritionToken, error) {
 	auth := models.AuthoritionToken{}
 	c, err := caller.ClientWithForm(http.MethodPost, a.cache)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ClientWithForm")
+		}
 		return auth, err
 	}
 
@@ -51,6 +69,9 @@ func (a *Api) AuthorizationToken() (models.AuthoritionToken, error) {
 		replacer.OptCache(a.cache),
 	)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("EndPoint")
+		}
 		return auth, err
 	}
 
@@ -62,21 +83,30 @@ func (a *Api) AuthorizationToken() (models.AuthoritionToken, error) {
 	}()
 	if err != nil {
 		if config.Config.Debug {
-
+			a.log.Error().Stack().Err(err).Msg("PostFormWithResponse")
 		}
 		return auth, err
 	}
 
 	bts, err := ioutil.ReadAll(res.Body)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ReadAll")
+		}
 		return auth, err
 	}
 
 	if err := json.Unmarshal(bts, &auth); err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Json Unmarshal AuthoritionToken")
+		}
 		return auth, err
 	}
 
 	if err := a.SetAuthorize(auth); err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("SetAuthorize")
+		}
 		return auth, err
 	}
 
