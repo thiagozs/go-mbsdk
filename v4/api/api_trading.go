@@ -160,12 +160,14 @@ func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) mo
 		return orderInfo
 	}
 
-	if err := a.SetOrder(models.OrdersIndex{
-		Symbol: symbol,
-		ID:     respOrder.OrderID,
-		Price:  price.String(),
-		Side:   order.Side,
-		Type:   order.Type,
+	if err := a.SetOrder([]models.OrdersIndex{
+		{
+			Symbol: symbol,
+			ID:     respOrder.OrderID,
+			Price:  price.String(),
+			Side:   order.Side,
+			Type:   order.Type,
+		},
 	}); err != nil {
 		orderInfo.Error = err
 		return orderInfo
@@ -201,7 +203,7 @@ func (a *Api) CancelOrder(symbol string, id string) error {
 	return nil
 }
 
-func (a *Api) CancelAllOrders(symbol string, prices []string) error {
+func (a *Api) CancelAllOrders(symbol string) error {
 
 	val, err := a.cache.GetKeyVal(config.ORDERS_INDEX.String())
 	if err != nil {
@@ -213,10 +215,17 @@ func (a *Api) CancelAllOrders(symbol string, prices []string) error {
 		return err
 	}
 
-	for _, v := range ordersIndex {
-		if err := a.CancelOrder(symbol, v.ID); err != nil {
-			return err
+	for i, v := range ordersIndex {
+		if strings.EqualFold(v.Symbol, symbol) {
+			if err := a.CancelOrder(symbol, v.ID); err != nil {
+				return err
+			}
+			ordersIndex = append(ordersIndex[:i], ordersIndex[i+1:]...)
 		}
+	}
+
+	if err := a.SetOrder(ordersIndex); err != nil {
+		return err
 	}
 
 	return nil

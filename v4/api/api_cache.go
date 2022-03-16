@@ -19,7 +19,7 @@ func (a *Api) SetAuthorize(auth models.AuthoritionToken) error {
 	return a.cache.SetKeyValAsJSON(config.AUTHORIZE.String(), auth)
 }
 
-func (a *Api) SetOrder(order models.OrdersIndex) error {
+func (a *Api) SetOrder(order []models.OrdersIndex) error {
 
 	orders := []models.OrdersIndex{}
 
@@ -32,7 +32,7 @@ func (a *Api) SetOrder(order models.OrdersIndex) error {
 		return err
 	}
 
-	orders = append(orders, order)
+	orders = append(orders, order...)
 
 	return a.cache.SetKeyValAsJSON(config.ORDERS_INDEX.String(), orders)
 }
