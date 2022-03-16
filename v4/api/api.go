@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"os"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/pkgerrors"
 	"github.com/thiagozs/go-mbsdk/v4/config"
 	"github.com/thiagozs/go-mbsdk/v4/models"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/caller"
@@ -21,13 +24,20 @@ func New(opts ...Options) (*Api, error) {
 			return &Api{}, err
 		}
 	}
+
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
+	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
+
+	log := zerolog.New(os.Stderr).With().Timestamp().Logger()
+
 	config.Config.Login = mts.key
 	config.Config.Password = mts.secret
 	config.Config.Cache = mts.cache
 	config.Config.Debug = mts.debug
 	config.Config.Endpoint = mts.endpoint
 
-	return &Api{mts.cache}, nil
+	return &Api{mts.cache, log}, nil
 }
 
 func (a *Api) AuthorizationToken() (models.AuthoritionToken, error) {
@@ -51,6 +61,9 @@ func (a *Api) AuthorizationToken() (models.AuthoritionToken, error) {
 		}
 	}()
 	if err != nil {
+		if config.Config.Debug {
+
+		}
 		return auth, err
 	}
 

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/rs/zerolog"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/cache"
 )
 
@@ -19,6 +20,7 @@ func (k Kind) String() string {
 
 type Api struct {
 	cache *cache.Cache
+	log   zerolog.Logger
 }
 
 type Options func(o *ApiCfg) error

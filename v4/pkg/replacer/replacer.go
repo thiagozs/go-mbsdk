@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/rs/zerolog"
 	"github.com/thiagozs/go-mbsdk/v4/config"
 	"github.com/thiagozs/go-mbsdk/v4/models"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/cache"
@@ -16,9 +17,10 @@ type OptionsCfg struct {
 	cache   *cache.Cache
 	priceIn string
 	key     string
-	pair    string
+	symbol  string
 	orderId string
 	params  string
+	log     zerolog.Logger
 }
 
 func OptCache(cache *cache.Cache) Options {
@@ -42,9 +44,9 @@ func OptKey(key string) Options {
 	}
 }
 
-func OptPair(pair string) Options {
+func OptSymbol(symbol string) Options {
 	return func(o *OptionsCfg) error {
-		o.pair = pair
+		o.symbol = symbol
 		return nil
 	}
 }
@@ -52,6 +54,13 @@ func OptPair(pair string) Options {
 func OptOrderId(orderId string) Options {
 	return func(o *OptionsCfg) error {
 		o.orderId = orderId
+		return nil
+	}
+}
+
+func OptLog(log zerolog.Logger) Options {
+	return func(o *OptionsCfg) error {
+		o.log = log
 		return nil
 	}
 }
@@ -72,6 +81,8 @@ func Endpoint(opts ...Options) (string, error) {
 		}
 	}
 
+	log := mts.log
+
 	endpoint, ok := config.EndPoints[mts.key]
 	if !ok {
 		return "", fmt.Errorf("endpoint not found")
@@ -87,12 +98,11 @@ func Endpoint(opts ...Options) (string, error) {
 	}
 
 	if strings.Contains(endpoint, "{symbol}") {
-		endpoint = strings.ReplaceAll(endpoint, "{symbol}", mts.pair)
+		endpoint = strings.ReplaceAll(endpoint, "{symbol}", mts.symbol)
 	}
 
 	if strings.Contains(endpoint, "{orderId}") {
-		val, _ := mts.cache.GetKeyVal(mts.priceIn)
-		endpoint = strings.ReplaceAll(endpoint, "{orderId}", val)
+		endpoint = strings.ReplaceAll(endpoint, "{orderId}", mts.orderId)
 	}
 
 	if len(config.Config.Endpoint) > 0 {
@@ -104,7 +114,11 @@ func Endpoint(opts ...Options) (string, error) {
 	}
 
 	if config.Config.Debug {
-		fmt.Println("endpoint:", endpoint)
+		log.Debug().
+			Str("symbol", mts.symbol).
+			Str("orderId", mts.orderId).
+			Str("endpoint", endpoint).
+			Msg("")
 	}
 
 	return endpoint, nil

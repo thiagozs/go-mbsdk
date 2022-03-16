@@ -9,7 +9,6 @@ import (
 	"github.com/thiagozs/go-mbsdk/v4/models"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/caller"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/replacer"
-	"github.com/thiagozs/go-mbsdk/v4/pkg/utils"
 )
 
 func (a *Api) Tickers(symbol string) (models.TickersResponse, error) {
@@ -20,12 +19,10 @@ func (a *Api) Tickers(symbol string) (models.TickersResponse, error) {
 		return tickers, err
 	}
 
-	pair, _ := utils.PairQuote(symbol)
-
 	v, _ := query.Values(models.TickersQuery{Symbols: symbol})
 	endpoint, err := replacer.Endpoint(
 		replacer.OptKey("TICKERS"),
-		replacer.OptPair(pair),
+		replacer.OptSymbol(symbol),
 		replacer.OptCache(a.cache),
 	)
 	if err != nil {

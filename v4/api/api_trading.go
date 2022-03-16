@@ -112,14 +112,22 @@ func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) mo
 
 	c, err := caller.ClientWithToken(http.MethodPost, a.cache)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ClientWithToken")
+		}
 		orderInfo.Error = err
 		return orderInfo
 	}
 
 	endpoint, err := replacer.Endpoint(replacer.OptKey("ORDER_PLACE"),
-		replacer.OptPair(symbol),
-		replacer.OptCache(a.cache))
+		replacer.OptSymbol(symbol),
+		replacer.OptCache(a.cache),
+		replacer.OptLog(a.log),
+	)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Replacer")
+		}
 		orderInfo.Error = err
 		return orderInfo
 	}
@@ -129,6 +137,9 @@ func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) mo
 
 	resp, err := c.PostWithResponse(endpoint, order.ToBytes())
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("PostWithResponse")
+		}
 		orderInfo.Error = err
 		return orderInfo
 	}
@@ -138,6 +149,9 @@ func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) mo
 
 	bts, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ReadAll")
+		}
 		orderInfo.Error = err
 		return orderInfo
 	}
@@ -145,6 +159,9 @@ func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) mo
 	if resp.StatusCode >= 400 {
 		respOrder := models.ErrorPlaceOrderResponse{}
 		if err := json.Unmarshal(bts, &respOrder); err != nil {
+			if config.Config.Debug {
+				a.log.Error().Stack().Err(err).Msg("Json Unmarshal ErrorPlaceOrderResponse")
+			}
 			orderInfo.Error = err
 			return orderInfo
 		}
@@ -156,6 +173,9 @@ func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) mo
 
 	respOrder := models.PlaceOrderResponse{}
 	if err := json.Unmarshal(bts, &respOrder); err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Json Unmarshal PlaceOrderResponse")
+		}
 		orderInfo.Error = err
 		return orderInfo
 	}
@@ -169,6 +189,9 @@ func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) mo
 			Type:   order.Type,
 		},
 	}); err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Cache SetOrder")
+		}
 		orderInfo.Error = err
 		return orderInfo
 	}
@@ -183,20 +206,30 @@ func (a *Api) CancelOrder(symbol string, id string) error {
 
 	c, err := caller.ClientWithToken(http.MethodDelete, a.cache)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ClientWithToken")
+		}
 		return err
 	}
 
 	endpoint, err := replacer.Endpoint(replacer.OptKey("ORDER_CANCEL"),
-		replacer.OptPair(symbol),
+		replacer.OptSymbol(symbol),
 		replacer.OptCache(a.cache),
 		replacer.OptOrderId(id),
+		replacer.OptLog(a.log),
 	)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Replacer")
+		}
 		return err
 	}
 
 	_, err = c.Delete(endpoint, nil)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Delete")
+		}
 		return err
 	}
 
@@ -212,12 +245,18 @@ func (a *Api) CancelAllOrders(symbol string) error {
 
 	ordersIndex := []models.OrdersIndex{}
 	if err := json.Unmarshal([]byte(val), &ordersIndex); err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Json Unmarshal OrderIndex")
+		}
 		return err
 	}
 
 	for i, v := range ordersIndex {
 		if strings.EqualFold(v.Symbol, symbol) {
 			if err := a.CancelOrder(symbol, v.ID); err != nil {
+				if config.Config.Debug {
+					a.log.Error().Stack().Err(err).Msg("CancelOrder")
+				}
 				return err
 			}
 			ordersIndex = append(ordersIndex[:i], ordersIndex[i+1:]...)
@@ -225,6 +264,9 @@ func (a *Api) CancelAllOrders(symbol string) error {
 	}
 
 	if err := a.SetOrder(ordersIndex); err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("SetOrder")
+		}
 		return err
 	}
 
@@ -235,18 +277,28 @@ func (a *Api) CancelAllOpenOrders(symbol string) error {
 
 	c, err := caller.ClientWithToken(http.MethodDelete, a.cache)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ClientWithToken")
+		}
 		return err
 	}
 
 	endpoint, err := replacer.Endpoint(replacer.OptKey("ORDER_CANCEL_ALL"),
-		replacer.OptPair(symbol))
-
+		replacer.OptSymbol(symbol),
+		replacer.OptLog(a.log),
+	)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Replacer")
+		}
 		return err
 	}
 
 	_, err = c.Delete(endpoint, nil)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Delete")
+		}
 		return err
 	}
 
@@ -257,23 +309,36 @@ func (a *Api) GetOrder(symbol string) (models.GetOrderResponse, error) {
 	order := models.GetOrderResponse{}
 	c, err := caller.ClientWithToken(http.MethodGet, a.cache)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ClientWithToken")
+		}
 		return order, err
 	}
 
 	endpoint, err := replacer.Endpoint(replacer.OptKey("ORDER_GET"),
-		replacer.OptPair(symbol),
+		replacer.OptSymbol(symbol),
 		replacer.OptCache(a.cache),
+		replacer.OptLog(a.log),
 	)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Replacer")
+		}
 		return order, err
 	}
 
 	bts, err := c.Get(endpoint)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Get")
+		}
 		return order, err
 	}
 
 	if err := json.Unmarshal(bts, &order); err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Json Unmarshal GetOrderResponse")
+		}
 		return order, err
 	}
 
@@ -293,6 +358,9 @@ func (a *Api) ListOrders(symbol string, opts ...OrdersParams) (models.ListOrderR
 
 	c, err := caller.ClientWithToken(http.MethodGet, a.cache)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ClientWithToken")
+		}
 		return order, err
 	}
 
@@ -300,20 +368,30 @@ func (a *Api) ListOrders(symbol string, opts ...OrdersParams) (models.ListOrderR
 	v, _ := query.Values(params)
 
 	endpoint, err := replacer.Endpoint(replacer.OptKey("ORDER_LIST"),
-		replacer.OptPair(symbol),
+		replacer.OptSymbol(symbol),
 		replacer.OptCache(a.cache),
+		replacer.OptLog(a.log),
 		replacer.OptParams(v.Encode()),
 	)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Replacer")
+		}
 		return order, err
 	}
 
 	bts, err := c.Get(endpoint)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Get")
+		}
 		return order, err
 	}
 
 	if err := json.Unmarshal(bts, &order); err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Json Unmarshal ListOrderResponse")
+		}
 		return order, err
 	}
 
