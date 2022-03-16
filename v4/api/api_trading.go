@@ -19,79 +19,148 @@ import (
 
 type OrdersParams func(o *OrdersPameters) error
 
+type PlaceOrdersParams func(o *PlaceOrdersPameters) error
+
+type PlaceOrdersPameters struct {
+	Symbol    string
+	Side      string
+	Price     string
+	Kind      Kind
+	Type      string
+	PriceStop string
+	Quantity  string
+}
+
+func PoSimbol(value string) PlaceOrdersParams {
+	return func(a *PlaceOrdersPameters) error {
+		a.Symbol = value
+		return nil
+	}
+}
+
+func PoSide(value string) PlaceOrdersParams {
+	return func(a *PlaceOrdersPameters) error {
+		a.Side = value
+		return nil
+	}
+}
+
+func PoPrice(value string) PlaceOrdersParams {
+	return func(a *PlaceOrdersPameters) error {
+		a.Price = value
+		return nil
+	}
+}
+
+func PoKind(value Kind) PlaceOrdersParams {
+	return func(a *PlaceOrdersPameters) error {
+		a.Kind = value
+		return nil
+	}
+}
+
+func PoType(value string) PlaceOrdersParams {
+	return func(a *PlaceOrdersPameters) error {
+		a.Type = value
+		return nil
+	}
+}
+
+func PoPriceStop(value string) PlaceOrdersParams {
+	return func(a *PlaceOrdersPameters) error {
+		a.PriceStop = value
+		return nil
+	}
+}
+
+func PoQty(value string) PlaceOrdersParams {
+	return func(a *PlaceOrdersPameters) error {
+		a.Quantity = value
+		return nil
+	}
+}
+
 type OrdersPameters struct {
-	has_executions  string `url:"has_executions,omitempty"`
-	side            string `url:"side,omitempty"`
-	status          string `url:"status,omitempty"`
-	id_from         string `url:"id_from,omitempty"`
-	id_to           string `url:"id_to,omitempty"`
-	created_at_from string `url:"created_at_from,omitempty"`
-	created_at_to   string `url:"created_at_to,omitempty"`
+	HasExecutions string `url:"has_executions,omitempty"`
+	Side          string `url:"side,omitempty"`
+	Status        string `url:"status,omitempty"`
+	IdFrom        string `url:"id_from,omitempty"`
+	IdTo          string `url:"id_to,omitempty"`
+	CreatedFrom   string `url:"created_at_from,omitempty"`
+	createdTo     string `url:"created_at_to,omitempty"`
 }
 
 func OdrHasExec(value string) OrdersParams {
 	return func(a *OrdersPameters) error {
-		a.has_executions = value
+		a.HasExecutions = value
 		return nil
 	}
 }
 
 func OrdSide(value string) OrdersParams {
 	return func(a *OrdersPameters) error {
-		a.side = value
+		a.Side = value
 		return nil
 	}
 }
 
 func OrdSatus(value string) OrdersParams {
 	return func(a *OrdersPameters) error {
-		a.status = value
+		a.Status = value
 		return nil
 	}
 }
 
 func OrdIdFrom(value string) OrdersParams {
 	return func(a *OrdersPameters) error {
-		a.id_from = value
+		a.IdFrom = value
 		return nil
 	}
 }
 
 func OrdIdTo(value string) OrdersParams {
 	return func(a *OrdersPameters) error {
-		a.id_to = value
+		a.IdTo = value
 		return nil
 	}
 }
 
 func OrdCreatedFrom(value string) OrdersParams {
 	return func(a *OrdersPameters) error {
-		a.created_at_from = value
+		a.CreatedFrom = value
 		return nil
 	}
 }
 
 func OrdCreatedTo(value string) OrdersParams {
 	return func(a *OrdersPameters) error {
-		a.created_at_to = value
+		a.createdTo = value
 		return nil
 	}
 }
 
-func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) models.CustomPlaceOrderInfo {
+func (a *Api) PlaceOrder(opts ...PlaceOrdersParams) models.CustomPlaceOrderInfo {
 	orderInfo := models.CustomPlaceOrderInfo{}
-	order := models.PlaceOrderPayload{Async: true, Type: "limit"}
+	params := &PlaceOrdersPameters{}
 
-	price, _ := decimal.NewFromString(priceIn)
+	for _, op := range opts {
+		err := op(params)
+		if err != nil {
+			return orderInfo
+		}
+	}
 
-	pricestop, _ := decimal.NewFromString(pricestopIn)
+	order := models.PlaceOrderPayload{Async: true, Type: params.Type}
+
+	price, _ := decimal.NewFromString(params.Price)
+	pricestop, _ := decimal.NewFromString(params.PriceStop)
 
 	cutPrice := strings.Split(price.String(), ".")
 	limitPrice, _ := strconv.ParseInt(cutPrice[0], 10, 64)
 
 	cutPriceStop, _ := strconv.ParseInt(pricestop.String(), 10, 64)
 
-	switch kind {
+	switch params.Kind {
 	case BUY:
 		order.Side = BUY.String()
 	case SELL:
@@ -108,7 +177,7 @@ func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) mo
 		order.LimitPrice = int(limitPrice)
 	}
 
-	order.Qty = qty
+	order.Qty = params.Quantity
 
 	c, err := caller.ClientWithToken(http.MethodPost, a.cache)
 	if err != nil {
@@ -120,7 +189,7 @@ func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) mo
 	}
 
 	endpoint, err := replacer.Endpoint(replacer.OptKey("ORDER_PLACE"),
-		replacer.OptSymbol(symbol),
+		replacer.OptSymbol(params.Symbol),
 		replacer.OptCache(a.cache),
 		replacer.OptLog(a.log),
 	)
@@ -168,6 +237,9 @@ func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) mo
 		orderInfo.Error = fmt.Errorf("%s", respOrder.Message)
 		orderInfo.StatusCode = resp.StatusCode
 		orderInfo.Response = string(respOrder.ToBytes())
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(orderInfo.Error).Msg("Return orderInfo Error")
+		}
 		return orderInfo
 	}
 
@@ -182,7 +254,7 @@ func (a *Api) PlaceOrder(kind Kind, symbol, priceIn, pricestopIn, qty string) mo
 
 	if err := a.SetOrder([]models.OrdersIndex{
 		{
-			Symbol: symbol,
+			Symbol: params.Symbol,
 			ID:     respOrder.OrderID,
 			Price:  price.String(),
 			Side:   order.Side,

@@ -5,9 +5,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"runtime"
-	"strconv"
-	"strings"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
@@ -28,22 +25,12 @@ func New(opts ...Options) (*Api, error) {
 		}
 	}
 
-	pc, file, line, ok := runtime.Caller(1)
-	if !ok {
-		panic("Could not get context info for logger!")
-	}
-
-	filename := file[strings.LastIndex(file, "/")+1:] + ":" + strconv.Itoa(line)
-	funcname := runtime.FuncForPC(pc).Name()
-	fn := funcname[strings.LastIndex(funcname, ".")+1:]
-
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
 	zerolog.ErrorStackMarshaler = pkgerrors.MarshalStack
 
 	log := zerolog.New(os.Stderr).With().
-		Str("file_name", filename).
-		Str("function_name", fn).
+		Caller().
 		Timestamp().Logger()
 
 	config.Config.Login = mts.key
