@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/thiagozs/go-mbsdk/v4/config"
 	"github.com/thiagozs/go-mbsdk/v4/models"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/caller"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/replacer"
@@ -13,6 +14,9 @@ func (a *Api) GetBalances() (models.ListBalancesResponse, error) {
 	balances := models.ListBalancesResponse{}
 	c, err := caller.ClientWithToken(http.MethodGet, a.cache)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ClientWithToken")
+		}
 		return balances, err
 	}
 
@@ -20,19 +24,31 @@ func (a *Api) GetBalances() (models.ListBalancesResponse, error) {
 		replacer.OptCache(a.cache),
 	)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Replacer")
+		}
 		return balances, err
 	}
 
 	bts, err := c.Get(endpoint)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Get")
+		}
 		return balances, err
 	}
 
 	if err := json.Unmarshal(bts, &balances); err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Json Unmarshal Balances")
+		}
 		return balances, err
 	}
 
-	if err := a.SetBalance(balances); err != nil {
+	if err := a.CacheSetBalance(balances); err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("CacheSetBalance")
+		}
 		return balances, err
 	}
 
@@ -45,6 +61,9 @@ func (a *Api) GetAccounts() (models.ListAccountsResponse, error) {
 
 	c, err := caller.ClientWithToken(http.MethodGet, a.cache)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ClientWithToken")
+		}
 		return acc, err
 	}
 
@@ -52,19 +71,31 @@ func (a *Api) GetAccounts() (models.ListAccountsResponse, error) {
 		replacer.OptCache(a.cache),
 	)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Replacer")
+		}
 		return acc, err
 	}
 
 	bts, err := c.Get(endpoint)
 	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Get")
+		}
 		return acc, err
 	}
 
 	if err := json.Unmarshal(bts, &acc); err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("Json Unmarshal ListAccountsResponse")
+		}
 		return acc, err
 	}
 
-	if err := a.SetAccounts(acc); err != nil {
+	if err := a.CacheSetAccounts(acc); err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("SetAccounts")
+		}
 		return acc, err
 	}
 

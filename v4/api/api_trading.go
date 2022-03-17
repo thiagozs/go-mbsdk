@@ -252,7 +252,7 @@ func (a *Api) PlaceOrder(opts ...PlaceOrdersParams) models.CustomPlaceOrderInfo 
 		return orderInfo
 	}
 
-	if err := a.SetOrder([]models.OrdersIndex{
+	if err := a.CacheSetOrder([]models.OrdersIndex{
 		{
 			Symbol: params.Symbol,
 			ID:     respOrder.OrderID,
@@ -335,7 +335,7 @@ func (a *Api) CancelAllOrders(symbol string) error {
 		}
 	}
 
-	if err := a.SetOrder(ordersIndex); err != nil {
+	if err := a.CacheSetOrder(ordersIndex); err != nil {
 		if config.Config.Debug {
 			a.log.Error().Stack().Err(err).Msg("SetOrder")
 		}

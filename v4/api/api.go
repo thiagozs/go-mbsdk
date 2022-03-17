@@ -90,7 +90,7 @@ func (a *Api) AuthorizationToken() (models.AuthoritionToken, error) {
 		return auth, err
 	}
 
-	if err := a.SetAuthorize(auth); err != nil {
+	if err := a.CacheSetAuthorize(auth); err != nil {
 		if config.Config.Debug {
 			a.log.Error().Stack().Err(err).Msg("SetAuthorize")
 		}
@@ -98,4 +98,24 @@ func (a *Api) AuthorizationToken() (models.AuthoritionToken, error) {
 	}
 
 	return auth, nil
+}
+
+func (a *Api) Login() (models.AuthoritionToken, models.ListAccountsResponse, error) {
+	auth, err := a.AuthorizationToken()
+	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("AuthorizationToken")
+		}
+		return models.AuthoritionToken{}, models.ListAccountsResponse{}, err
+	}
+
+	acc, err := a.GetAccounts()
+	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("GetAccounts")
+		}
+		return models.AuthoritionToken{}, models.ListAccountsResponse{}, err
+	}
+
+	return auth, acc, nil
 }
