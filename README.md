@@ -4,6 +4,8 @@ Easy way to consume the public api informations from MercadoBitcoin
 
 ## API v4 (new - working in progress)
 
+### Endpoints available
+
 - [x] Authorization
 - [ ] Accounts
 	- [x] - Get Accounts
@@ -26,11 +28,14 @@ Easy way to consume the public api informations from MercadoBitcoin
 	- [ ] - Get Candles
 	- [ ] - Get Symbol
 
+### Cache
+The external cache system is not mandatory, but if you want to use a functions worked with cache for a delayed cli command, you needed use the cache system.
 
 ```golang
 key := os.Getenv("MB_KEY")
 secret := os.Getenv("MB_SECRET")
 
+// not mandatory
 optsc := []options.Options{
 	options.OptFolder("./settings"),
 	options.OptFileName("cache.db"),
@@ -39,6 +44,7 @@ optsc := []options.Options{
 	options.OptLogDisable(false),
 }
 
+// not mandatory
 c, err := cache.NewCache(kind.BUNTDB, optsc...)
 if err != nil {
 	log.Fatal(err)
@@ -48,7 +54,7 @@ opts := []api.Options{
 	api.OptKey(key),
 	api.OptSecret(secret),
 	api.OptDebug(true),
-	api.OptCache(c),
+	api.OptCache(c), // not mandatory
 }
 a, err := api.New(opts...)
 if err != nil {
