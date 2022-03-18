@@ -4,11 +4,42 @@ Easy way to consume the public api informations from MercadoBitcoin
 
 ## API v4 (new - working in progress)
 
+- [x] Authorization
+- [ ] Accounts
+	- [x] - Get Accounts
+	- [x] - Balance List
+	- [ ] - Position List
+- [ ] Trading
+	- [x] - Get Order
+	- [x] - Order Place
+	- [x] - Order Cancel
+	- [x] - Order List
+	- [x] - Order Cancel All
+- [ ] Wallet
+	- [ ] Wallet Deposit
+	- [ ] Wallet Withdraw
+	- [ ] Wallet GetDraw
+- [ ] Public data
+	- [x] - Get Ticker
+	- [ ] - Get Orderbook
+	- [ ] - Get Trades
+	- [ ] - Get Candles
+	- [ ] - Get Symbol
+
+
 ```golang
 key := os.Getenv("MB_KEY")
 secret := os.Getenv("MB_SECRET")
 
-c, err := cache.NewCache()
+optsc := []options.Options{
+	options.OptFolder("./settings"),
+	options.OptFileName("cache.db"),
+	options.OptTTL(3000),
+	options.OptLogDebug(true),
+	options.OptLogDisable(false),
+}
+
+c, err := cache.NewCache(kind.BUNTDB, optsc...)
 if err != nil {
 	log.Fatal(err)
 }
@@ -24,29 +55,21 @@ if err != nil {
 	fmt.Println(err)
 }
 
-// step 1 - get all authorization (mandatory)
-if auth, err := a.AuthorizationToken(); err != nil {
+auth, acc, err := a.Login()
+if err != nil {
 	fmt.Println(err)
-} else {
-	fmt.Println(auth)
+	return
 }
 
-// step 2 - run the account function to get all info (mandatory)
-if acc, err := a.GetAccounts(); err != nil {
-	fmt.Println(err)
-} else {
-	fmt.Println(acc)
-}
+fmt.Printf("%+v\n", auth)
+fmt.Printf("%+v\n", acc)
 
-// step 3 - run others methods, before that, you need 
-// run the function account to get all information
 if balances, err := a.GetBalances(); err != nil {
 	fmt.Println(err)
 } else {
 	fmt.Println(balances)
 }
 
-// step 4 - publics endpoints
 if ticker, err := a.Tickers("BTC-BRL"); err != nil {
 	fmt.Println(err)
 } else {

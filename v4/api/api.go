@@ -5,19 +5,21 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/pkgerrors"
+	"github.com/thiagozs/go-cache/v1/cache/drivers/kind"
+	"github.com/thiagozs/go-cache/v1/cache/options"
 	"github.com/thiagozs/go-mbsdk/v4/config"
 	"github.com/thiagozs/go-mbsdk/v4/models"
+	"github.com/thiagozs/go-mbsdk/v4/pkg/cache"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/caller"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/replacer"
 )
 
 func New(opts ...Options) (*Api, error) {
-
 	mts := &ApiCfg{}
-
 	for _, op := range opts {
 		err := op(mts)
 		if err != nil {
@@ -32,6 +34,16 @@ func New(opts ...Options) (*Api, error) {
 	log := zerolog.New(os.Stderr).With().
 		Caller().
 		Timestamp().Logger()
+
+	if mts.cache == nil {
+		cache, err := cache.NewCache(kind.GOCACHE,
+			options.OptTimeCleanUpInt(time.Duration(60)*time.Second),
+			options.OptTimeExpiration(time.Duration(300)*time.Second))
+		if err != nil {
+			return &Api{}, err
+		}
+		mts.cache = cache
+	}
 
 	config.Config.Login = mts.key
 	config.Config.Password = mts.secret

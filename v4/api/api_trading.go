@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/shopspring/decimal"
+	"github.com/thiagozs/go-cache/v1/cache/drivers/kind"
 	"github.com/thiagozs/go-mbsdk/v4/config"
 	"github.com/thiagozs/go-mbsdk/v4/models"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/caller"
@@ -308,7 +309,11 @@ func (a *Api) CancelOrder(symbol string, id string) error {
 	return nil
 }
 
-func (a *Api) CancelAllOrders(symbol string) error {
+func (a *Api) CancelAllCachedOrders(symbol string) error {
+
+	if a.cache.GetDriver() == kind.GOCACHE {
+		return fmt.Errorf("sorry, this method is not supported for GOCACHE driver")
+	}
 
 	val, err := a.cache.GetKeyVal(config.ORDERS_INDEX.String())
 	if err != nil {

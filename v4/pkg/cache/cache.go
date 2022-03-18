@@ -2,7 +2,7 @@ package cache
 
 import (
 	"github.com/thiagozs/go-cache/v1/cache"
-	"github.com/thiagozs/go-cache/v1/cache/drivers"
+	"github.com/thiagozs/go-cache/v1/cache/drivers/kind"
 	"github.com/thiagozs/go-cache/v1/cache/options"
 )
 
@@ -10,16 +10,9 @@ type Cache struct {
 	cache cache.CachePort
 }
 
-func NewCache(logDebug, logDisable bool) (*Cache, error) {
-	opts := []options.Options{
-		options.OptFolder("./settings"),
-		options.OptFileName("cache.db"),
-		options.OptTTL(3000),
-		options.OptLogDebug(logDebug),
-		options.OptLogDisable(logDisable),
-	}
+func NewCache(driver kind.Driver, opts ...options.Options) (*Cache, error) {
 
-	cache, err := cache.New(drivers.BUNTDB, opts...)
+	cache, err := cache.New(driver, opts...)
 	if err != nil {
 		return &Cache{}, err
 	}
@@ -48,4 +41,8 @@ func (c *Cache) SetKeyValTTLAsJSONTTL(key string, value interface{}, ttl int) er
 
 func (c *Cache) SetKeyValAsJSON(key string, value interface{}) error {
 	return c.cache.WriteKeyValAsJSON(key, value)
+}
+
+func (c *Cache) GetDriver() kind.Driver {
+	return c.cache.GetDriver()
 }

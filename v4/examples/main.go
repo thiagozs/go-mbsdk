@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/thiagozs/go-cache/v1/cache/drivers/kind"
+	"github.com/thiagozs/go-cache/v1/cache/options"
 	"github.com/thiagozs/go-mbsdk/v4/api"
 	"github.com/thiagozs/go-mbsdk/v4/pkg/cache"
 )
@@ -13,7 +15,15 @@ func main() {
 	key := os.Getenv("MB_KEY")
 	secret := os.Getenv("MB_SECRET")
 
-	c, err := cache.NewCache(false, true)
+	optsc := []options.Options{
+		options.OptFolder("./settings"),
+		options.OptFileName("cache.db"),
+		options.OptTTL(3000),
+		options.OptLogDebug(true),
+		options.OptLogDisable(false),
+	}
+
+	c, err := cache.NewCache(kind.BUNTDB, optsc...)
 	if err != nil {
 		log.Fatal(err)
 	}
