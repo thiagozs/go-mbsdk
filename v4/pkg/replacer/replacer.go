@@ -94,6 +94,7 @@ func Endpoint(opts ...Options) (string, error) {
 		if err := json.Unmarshal([]byte(val), &acc); err != nil {
 			return "", err
 		}
+		fmt.Println(acc)
 		endpoint = strings.ReplaceAll(endpoint, "{accountId}", acc[0].ID)
 	}
 

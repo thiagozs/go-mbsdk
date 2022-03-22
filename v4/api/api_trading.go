@@ -226,6 +226,14 @@ func (a *Api) PlaceOrder(opts ...PlaceOrdersParams) models.CustomPlaceOrderInfo 
 		return orderInfo
 	}
 
+	if config.Config.Debug {
+		a.log.Debug().
+			Str("endpoint", endpoint).
+			Int("status_code", resp.StatusCode).
+			Str("body", string(bts)).
+			Msg("")
+	}
+
 	if resp.StatusCode >= 400 {
 		respOrder := models.ErrorPlaceOrderResponse{}
 		if err := json.Unmarshal(bts, &respOrder); err != nil {

@@ -16,7 +16,7 @@ func (p *AuthoritionToken) ToBytes() []byte {
 }
 
 type TickersQuery struct {
-	Symbols string `url:"symbols"`
+	Symbols string `url:"symbols,omitempty"`
 }
 
 type TickersResponse []struct {
@@ -144,3 +144,62 @@ type OrdersIndex struct {
 }
 
 type OrdersIndexResponse []OrdersIndex
+
+type OrderBookQuery struct {
+	Limit string `url:"limit,omitempty"`
+}
+type OrderBookResponse struct {
+	Asks      [][]string `json:"asks"`
+	Bids      [][]string `json:"bids"`
+	Timestamp int        `json:"timestamp"`
+}
+
+type TradesResponse []struct {
+	Amount string `json:"amount"`
+	Date   int    `json:"date"`
+	Price  string `json:"price"`
+	Tid    int    `json:"tid"`
+	Type   string `json:"type"`
+}
+
+type CandlesQuery struct {
+	Symbols    string `url:"symbols,omitempty"`
+	Resolution string `url:"resolution,omitempty"`
+	To         int    `url:"to,omitempty"`
+	From       int    `url:"from,omitempty"`
+	CountBack  int    `url:"countback,omitempty"`
+}
+
+type CandlesResponse []struct {
+	Close     string `json:"close"`
+	High      string `json:"high"`
+	Low       string `json:"low"`
+	Open      string `json:"open"`
+	Precision string `json:"precision"`
+	Symbol    string `json:"symbol"`
+	Timestamp int    `json:"timestamp"`
+	Volume    string `json:"volume"`
+}
+
+type SymbolsQuery struct {
+	Symbols []string `url:"symbols,omitempty"`
+}
+
+type SymbolsResponse struct {
+	Symbol         []string `json:"symbol"`
+	Description    []string `json:"description"`
+	Currency       []string `json:"currency"`
+	BaseCurrency   []string `json:"base-currency"`
+	ExchangeListed []bool   `json:"exchange-listed"`
+	ExchangeTraded []bool   `json:"exchange-traded"`
+	Minmovement    []string `json:"minmovement"`
+	Pricescale     []int    `json:"pricescale"`
+	Type           []string `json:"type"`
+	Timezone       []string `json:"timezone"`
+	SessionRegular []string `json:"session-regular"`
+}
+
+type ErrorApiResponse struct {
+	Code    string `json:"code"`
+	Message string `json:"message"`
+}

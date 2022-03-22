@@ -11,7 +11,7 @@ Easy way to consume the public api informations from MercadoBitcoin
 	- [x] - Get Accounts
 	- [x] - Balance List
 	- [ ] - Position List
-- [ ] Trading
+- [x] Trading
 	- [x] - Get Order
 	- [x] - Order Place
 	- [x] - Order Cancel
@@ -21,12 +21,12 @@ Easy way to consume the public api informations from MercadoBitcoin
 	- [ ] Wallet Deposit
 	- [ ] Wallet Withdraw
 	- [ ] Wallet GetDraw
-- [ ] Public data
+- [x] Public data
 	- [x] - Get Ticker
-	- [ ] - Get Orderbook
-	- [ ] - Get Trades
-	- [ ] - Get Candles
-	- [ ] - Get Symbol
+	- [x] - Get Orderbook
+	- [x] - Get Trades
+	- [x] - Get Candles
+	- [x] - Get Symbol
 
 ### Cache
 The external cache system is not mandatory, but if you want to use a functions worked with cache for a delayed cli command, you needed use the cache system.

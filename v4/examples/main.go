@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/thiagozs/go-cache/v1/cache/drivers/kind"
 	"github.com/thiagozs/go-cache/v1/cache/options"
@@ -14,6 +15,7 @@ import (
 func main() {
 	key := os.Getenv("MB_KEY")
 	secret := os.Getenv("MB_SECRET")
+	endpoint := os.Getenv("MB_ENDPOINT")
 
 	optsc := []options.Options{
 		options.OptFolder("./settings"),
@@ -33,6 +35,7 @@ func main() {
 		api.OptSecret(secret),
 		api.OptDebug(true),
 		api.OptCache(c),
+		api.OptEndpoint(endpoint),
 	}
 	a, err := api.New(opts...)
 	if err != nil {
@@ -60,4 +63,31 @@ func main() {
 		fmt.Println(ticker)
 	}
 
+	if ticker, err := a.OrderBook("BTC-BRL", "1"); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(ticker)
+	}
+
+	if trades, err := a.Trades("BTC-BRL"); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(trades)
+	}
+
+	if trades, err := a.Symbols([]string{"BTC-BRL"}); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(trades)
+	}
+
+	now := int(time.Now().Unix())
+
+	if candles, err := a.Candles(api.CandSymbols("BTC-BRL"),
+		api.CandResolution("15m"), api.CandFrom(now),
+		api.CandTo(now+3600)); err != nil {
+		fmt.Println(err)
+	} else {
+		fmt.Println(candles)
+	}
 }

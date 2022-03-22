@@ -34,13 +34,13 @@ var EndPoints = map[string]string{
 	// WALLET
 	"WALLET_DEPOSIT":  "https://api.mercadobitcoin.net/api/v4/accounts/{accountId}/wallet/{symbol}/deposits",              // TODO:
 	"WALLET_WITHDRAW": "https://api.mercadobitcoin.net/api/v4/accounts/{accountId}/wallet/{symbol}/withdrawals",           // TODO:
-	"WALLET_GETDRAW":  "https://api.mercadobitcoin.net/api/v4/accounts/{accountId}/wallet/{symbol}/withdraw/{withdrawId}", //TODO:
+	"WALLET_GETDRAW":  "https://api.mercadobitcoin.net/api/v4/accounts/{accountId}/wallet/{symbol}/withdraw/{withdrawId}", // TODO:
 
 	// PUBLIC DATA
-	"ORDERBOOK": "https://api.mercadobitcoin.net/api/v4/{symbol}/orderbook", //TODO:
-	"TRADES":    "https://api.mercadobitcoin.net/api/v4/{symbol}/trades",    // TODO:
-	"CANDLES":   "https://api.mercadobitcoin.net/api/v4/candles",            // TODO:
-	"SYMBOL":    "https://api.mercadobitcoin.net/api/v4/symbols",            // TODO:
+	"ORDERBOOK": "https://api.mercadobitcoin.net/api/v4/{symbol}/orderbook",
+	"TRADES":    "https://api.mercadobitcoin.net/api/v4/{symbol}/trades",
+	"CANDLES":   "https://api.mercadobitcoin.net/api/v4/candles",
+	"SYMBOLS":   "https://api.mercadobitcoin.net/api/v4/symbols",
 	"TICKERS":   "https://api.mercadobitcoin.net/api/v4/tickers",
 }
 
