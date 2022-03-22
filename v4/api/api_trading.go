@@ -284,6 +284,7 @@ func (a *Api) PlaceOrder(opts ...PlaceOrdersParams) models.CustomPlaceOrderInfo 
 }
 
 func (a *Api) CancelOrder(symbol string, id string) error {
+	errApi := models.ErrorApiResponse{}
 
 	c, err := caller.ClientWithToken(http.MethodDelete, a.cache)
 	if err != nil {
@@ -306,12 +307,39 @@ func (a *Api) CancelOrder(symbol string, id string) error {
 		return err
 	}
 
-	_, err = c.Delete(endpoint, nil)
+	res, err := c.DeleteWithResponse(endpoint, nil)
 	if err != nil {
 		if config.Config.Debug {
 			a.log.Error().Stack().Err(err).Msg("Delete")
 		}
 		return err
+	}
+	defer res.Body.Close()
+
+	bts, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ReadAll")
+		}
+		return err
+	}
+
+	if config.Config.Debug {
+		a.log.Info().
+			Str("endpoint", endpoint).
+			Int("status_code", res.StatusCode).
+			Str("body", string(bts)).
+			Msg("")
+	}
+
+	if res.StatusCode >= 400 {
+		if err := json.Unmarshal(bts, &errApi); err != nil {
+			if config.Config.Debug {
+				a.log.Error().Stack().Err(err).Msg("Json Unmarshal errApi")
+			}
+			return err
+		}
+		return fmt.Errorf("%s - %s", errApi.Code, errApi.Message)
 	}
 
 	return nil
@@ -359,6 +387,7 @@ func (a *Api) CancelAllCachedOrders(symbol string) error {
 }
 
 func (a *Api) CancelAllOpenOrders(symbol string) error {
+	errApi := models.ErrorApiResponse{}
 
 	c, err := caller.ClientWithToken(http.MethodDelete, a.cache)
 	if err != nil {
@@ -379,12 +408,39 @@ func (a *Api) CancelAllOpenOrders(symbol string) error {
 		return err
 	}
 
-	_, err = c.Delete(endpoint, nil)
+	res, err := c.DeleteWithResponse(endpoint, nil)
 	if err != nil {
 		if config.Config.Debug {
 			a.log.Error().Stack().Err(err).Msg("Delete")
 		}
 		return err
+	}
+	defer res.Body.Close()
+
+	bts, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ReadAll")
+		}
+		return err
+	}
+
+	if config.Config.Debug {
+		a.log.Info().
+			Str("endpoint", endpoint).
+			Int("status_code", res.StatusCode).
+			Str("body", string(bts)).
+			Msg("")
+	}
+
+	if res.StatusCode >= 400 {
+		if err := json.Unmarshal(bts, &errApi); err != nil {
+			if config.Config.Debug {
+				a.log.Error().Stack().Err(err).Msg("Json Unmarshal errApi")
+			}
+			return err
+		}
+		return fmt.Errorf("%s - %s", errApi.Code, errApi.Message)
 	}
 
 	return nil
@@ -392,6 +448,8 @@ func (a *Api) CancelAllOpenOrders(symbol string) error {
 
 func (a *Api) GetOrder(symbol string) (models.GetOrderResponse, error) {
 	order := models.GetOrderResponse{}
+	errApi := models.ErrorApiResponse{}
+
 	c, err := caller.ClientWithToken(http.MethodGet, a.cache)
 	if err != nil {
 		if config.Config.Debug {
@@ -412,12 +470,39 @@ func (a *Api) GetOrder(symbol string) (models.GetOrderResponse, error) {
 		return order, err
 	}
 
-	bts, err := c.Get(endpoint)
+	res, err := c.GetWithResponse(endpoint)
 	if err != nil {
 		if config.Config.Debug {
 			a.log.Error().Stack().Err(err).Msg("Get")
 		}
 		return order, err
+	}
+	defer res.Body.Close()
+
+	bts, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ReadAll")
+		}
+		return order, err
+	}
+
+	if config.Config.Debug {
+		a.log.Info().
+			Str("endpoint", endpoint).
+			Int("status_code", res.StatusCode).
+			Str("body", string(bts)).
+			Msg("")
+	}
+
+	if res.StatusCode >= 400 {
+		if err := json.Unmarshal(bts, &errApi); err != nil {
+			if config.Config.Debug {
+				a.log.Error().Stack().Err(err).Msg("Json Unmarshal errApi")
+			}
+			return order, err
+		}
+		return order, fmt.Errorf("%s - %s", errApi.Code, errApi.Message)
 	}
 
 	if err := json.Unmarshal(bts, &order); err != nil {
@@ -432,6 +517,8 @@ func (a *Api) GetOrder(symbol string) (models.GetOrderResponse, error) {
 
 func (a *Api) ListOrders(symbol string, opts ...OrdersParams) (models.ListOrderResponse, error) {
 	order := models.ListOrderResponse{}
+	errApi := models.ErrorApiResponse{}
+
 	params := &OrdersPameters{}
 
 	for _, op := range opts {
@@ -449,7 +536,6 @@ func (a *Api) ListOrders(symbol string, opts ...OrdersParams) (models.ListOrderR
 		return order, err
 	}
 
-	// gen parametes
 	v, _ := query.Values(params)
 	endpoint, err := replacer.Endpoint(replacer.OptKey("ORDER_LIST"),
 		replacer.OptSymbol(symbol),
@@ -464,12 +550,39 @@ func (a *Api) ListOrders(symbol string, opts ...OrdersParams) (models.ListOrderR
 		return order, err
 	}
 
-	bts, err := c.Get(endpoint)
+	res, err := c.GetWithResponse(endpoint)
 	if err != nil {
 		if config.Config.Debug {
 			a.log.Error().Stack().Err(err).Msg("Get")
 		}
 		return order, err
+	}
+	defer res.Body.Close()
+
+	bts, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ReadAll")
+		}
+		return order, err
+	}
+
+	if config.Config.Debug {
+		a.log.Info().
+			Str("endpoint", endpoint).
+			Int("status_code", res.StatusCode).
+			Str("body", string(bts)).
+			Msg("")
+	}
+
+	if res.StatusCode >= 400 {
+		if err := json.Unmarshal(bts, &errApi); err != nil {
+			if config.Config.Debug {
+				a.log.Error().Stack().Err(err).Msg("Json Unmarshal errApi")
+			}
+			return order, err
+		}
+		return order, fmt.Errorf("%s - %s", errApi.Code, errApi.Message)
 	}
 
 	if err := json.Unmarshal(bts, &order); err != nil {
