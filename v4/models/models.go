@@ -149,9 +149,9 @@ type OrderBookQuery struct {
 	Limit string `url:"limit,omitempty"`
 }
 type OrderBookResponse struct {
-	Asks      [][]string `json:"asks"`
-	Bids      [][]string `json:"bids"`
-	Timestamp int        `json:"timestamp"`
+	Asks      []string `json:"asks"`
+	Bids      []string `json:"bids"`
+	Timestamp int      `json:"timestamp"`
 }
 
 type TradesResponse []struct {

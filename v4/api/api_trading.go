@@ -143,6 +143,7 @@ func OrdCreatedTo(value string) OrdersParams {
 func (a *Api) PlaceOrder(opts ...PlaceOrdersParams) models.CustomPlaceOrderInfo {
 	orderInfo := models.CustomPlaceOrderInfo{}
 	params := &PlaceOrdersPameters{}
+	errApi := models.ErrorApiResponse{}
 
 	for _, op := range opts {
 		err := op(params)
@@ -235,17 +236,16 @@ func (a *Api) PlaceOrder(opts ...PlaceOrdersParams) models.CustomPlaceOrderInfo 
 	}
 
 	if resp.StatusCode >= 400 {
-		respOrder := models.ErrorPlaceOrderResponse{}
-		if err := json.Unmarshal(bts, &respOrder); err != nil {
+		if err := json.Unmarshal(bts, &errApi); err != nil {
 			if config.Config.Debug {
-				a.log.Error().Stack().Err(err).Msg("Json Unmarshal ErrorPlaceOrderResponse")
+				a.log.Error().Stack().Err(err).Msg("Json Unmarshal ErrorApi")
 			}
 			orderInfo.Error = err
 			return orderInfo
 		}
-		orderInfo.Error = fmt.Errorf("%s", respOrder.Message)
+		orderInfo.Error = fmt.Errorf("%s - %s", errApi.Code, errApi.Message)
 		orderInfo.StatusCode = resp.StatusCode
-		orderInfo.Response = string(respOrder.ToBytes())
+		orderInfo.Response = string(bts)
 		if config.Config.Debug {
 			a.log.Error().Stack().Err(orderInfo.Error).Msg("Return orderInfo Error")
 		}

@@ -2,6 +2,8 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/thiagozs/go-mbsdk/v4/config"
@@ -12,6 +14,8 @@ import (
 
 func (a *Api) GetBalances() (models.ListBalancesResponse, error) {
 	balances := models.ListBalancesResponse{}
+	errApi := models.ErrorApiResponse{}
+
 	c, err := caller.ClientWithToken(http.MethodGet, a.cache)
 	if err != nil {
 		if config.Config.Debug {
@@ -30,12 +34,39 @@ func (a *Api) GetBalances() (models.ListBalancesResponse, error) {
 		return balances, err
 	}
 
-	bts, err := c.Get(endpoint)
+	res, err := c.GetWithResponse(endpoint)
 	if err != nil {
 		if config.Config.Debug {
 			a.log.Error().Stack().Err(err).Msg("Get")
 		}
 		return balances, err
+	}
+	defer res.Body.Close()
+
+	bts, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ReadAll")
+		}
+		return balances, err
+	}
+
+	if config.Config.Debug {
+		a.log.Info().
+			Str("endpoint", endpoint).
+			Int("status_code", res.StatusCode).
+			Str("body", string(bts)).
+			Msg("")
+	}
+
+	if res.StatusCode >= 400 {
+		if err := json.Unmarshal(bts, &errApi); err != nil {
+			if config.Config.Debug {
+				a.log.Error().Stack().Err(err).Msg("Json Unmarshal errApi")
+			}
+			return balances, err
+		}
+		return balances, fmt.Errorf("%s - %s", errApi.Code, errApi.Message)
 	}
 
 	if err := json.Unmarshal(bts, &balances); err != nil {
@@ -58,6 +89,7 @@ func (a *Api) GetBalances() (models.ListBalancesResponse, error) {
 func (a *Api) GetAccounts() (models.ListAccountsResponse, error) {
 
 	acc := models.ListAccountsResponse{}
+	errApi := models.ErrorApiResponse{}
 
 	c, err := caller.ClientWithToken(http.MethodGet, a.cache)
 	if err != nil {
@@ -77,12 +109,39 @@ func (a *Api) GetAccounts() (models.ListAccountsResponse, error) {
 		return acc, err
 	}
 
-	bts, err := c.Get(endpoint)
+	res, err := c.GetWithResponse(endpoint)
 	if err != nil {
 		if config.Config.Debug {
 			a.log.Error().Stack().Err(err).Msg("Get")
 		}
 		return acc, err
+	}
+	defer res.Body.Close()
+
+	bts, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		if config.Config.Debug {
+			a.log.Error().Stack().Err(err).Msg("ReadAll")
+		}
+		return acc, err
+	}
+
+	if config.Config.Debug {
+		a.log.Info().
+			Str("endpoint", endpoint).
+			Int("status_code", res.StatusCode).
+			Str("body", string(bts)).
+			Msg("")
+	}
+
+	if res.StatusCode >= 400 {
+		if err := json.Unmarshal(bts, &errApi); err != nil {
+			if config.Config.Debug {
+				a.log.Error().Stack().Err(err).Msg("Json Unmarshal errApi")
+			}
+			return acc, err
+		}
+		return acc, fmt.Errorf("%s - %s", errApi.Code, errApi.Message)
 	}
 
 	if err := json.Unmarshal(bts, &acc); err != nil {
