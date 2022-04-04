@@ -31,10 +31,32 @@ Easy way to consume the public api informations from MercadoBitcoin
 ### Cache
 The external cache system is not mandatory, but if you want to use a functions worked with cache for a delayed cli command, you needed use the cache system.
 
+#### With cache system default (memory)
+
 ```golang
 key := os.Getenv("MB_KEY")
 secret := os.Getenv("MB_SECRET")
 
+opts := []api.Options{
+	api.OptKey(key),
+	api.OptSecret(secret),
+	api.OptDebug(true),
+}
+a, err := api.New(opts...)
+if err != nil {
+	fmt.Println(err)
+}
+
+auth, acc, err := a.Login()
+if err != nil {
+	fmt.Println(err)
+	return
+}
+```
+
+#### With cache system persistent (go-cache)
+
+```golang
 // not mandatory
 optsc := []options.Options{
 	options.OptFolder("./settings"),
@@ -56,36 +78,13 @@ opts := []api.Options{
 	api.OptDebug(true),
 	api.OptCache(c), // not mandatory
 }
-a, err := api.New(opts...)
-if err != nil {
-	fmt.Println(err)
-}
 
-auth, acc, err := a.Login()
+a, err := api.New(opts...)
 if err != nil {
 	fmt.Println(err)
 	return
 }
-
-fmt.Printf("%+v\n", auth)
-fmt.Printf("%+v\n", acc)
-
-if balances, err := a.GetBalances(); err != nil {
-	fmt.Println(err)
-} else {
-	fmt.Println(balances)
-}
-
-if ticker, err := a.Tickers("BTC-BRL"); err != nil {
-	fmt.Println(err)
-} else {
-	fmt.Println(ticker)
-}
 ```
-
-## ~~Example of API consume of Version 3~~ (deprecated)
-
-Simple code writed on `main.go`. Just fill up the model **params** and **methods** and make a request.
 
 ## Versioning and license
 

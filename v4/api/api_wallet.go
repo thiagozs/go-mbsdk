@@ -314,7 +314,7 @@ func (a *Api) WalletWithdrawCoin(opts ...WalletCoinOptions) (models.WalletWithdr
 	res, err := c.PostWithResponse(endpoint, wcp.ToBytes())
 	if err != nil {
 		if config.Config.Debug {
-			a.log.Error().Stack().Err(err).Msg("Get")
+			a.log.Error().Stack().Err(err).Msg("PostWithResponse")
 		}
 		return withdrawcoin, err
 	}
