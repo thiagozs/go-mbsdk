@@ -14,13 +14,14 @@ import (
 type Options func(o *OptionsCfg) error
 
 type OptionsCfg struct {
-	cache   *cache.Cache
-	priceIn string
-	key     string
-	symbol  string
-	orderId string
-	params  string
-	log     zerolog.Logger
+	cache      *cache.Cache
+	log        zerolog.Logger
+	priceIn    string
+	key        string
+	symbol     string
+	orderId    string
+	params     string
+	withdrawId string
 }
 
 func OptCache(cache *cache.Cache) Options {
@@ -72,6 +73,13 @@ func OptParams(params string) Options {
 	}
 }
 
+func OptWithDrawId(withdrawId string) Options {
+	return func(o *OptionsCfg) error {
+		o.withdrawId = withdrawId
+		return nil
+	}
+}
+
 func Endpoint(opts ...Options) (string, error) {
 	mts := &OptionsCfg{}
 	for _, op := range opts {
@@ -104,6 +112,10 @@ func Endpoint(opts ...Options) (string, error) {
 
 	if strings.Contains(endpoint, "{orderId}") {
 		endpoint = strings.ReplaceAll(endpoint, "{orderId}", mts.orderId)
+	}
+
+	if strings.Contains(endpoint, "{withdrawId}") {
+		endpoint = strings.ReplaceAll(endpoint, "{withdrawId}", mts.withdrawId)
 	}
 
 	if len(config.Config.Endpoint) > 0 {

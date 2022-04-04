@@ -203,3 +203,46 @@ type ErrorApiResponse struct {
 	Code    string `json:"code"`
 	Message string `json:"message"`
 }
+
+type WalletGetDepositsResponse []struct {
+	Address      string `json:"address"`
+	AddressTag   string `json:"addressTag"`
+	Amount       string `json:"amount"`
+	Coin         string `json:"coin"`
+	ConfirmTimes string `json:"confirmTimes"`
+	CreatedAt    int    `json:"createdAt"`
+	Status       string `json:"status"`
+	TransferType string `json:"transferType"`
+}
+
+type WalletWithdrawCoinResponse struct {
+	Account     string `json:"account"`
+	Address     string `json:"address"`
+	Coin        string `json:"coin"`
+	CreatedAt   string `json:"created_at"`
+	Description string `json:"description"`
+	Fee         string `json:"fee"`
+	ID          int    `json:"id"`
+	NetQuantity string `json:"net_quantity"`
+	Quantity    string `json:"quantity"`
+	Status      int    `json:"status"`
+	Tx          string `json:"tx"`
+	UpdatedAt   string `json:"updated_at"`
+}
+
+type WalletWithdrawCoinPayload struct {
+	AccountRef  int    `json:"account_ref"`
+	Address     string `json:"address"`
+	Description string `json:"description"`
+	Quantity    string `json:"quantity"`
+	Symbol      string `json:"symbol"`
+	TxFee       string `json:"tx_fee"`
+}
+
+func (p *WalletWithdrawCoinPayload) ToBytes() []byte {
+	bts, err := json.Marshal(p)
+	if err != nil {
+		panic(err)
+	}
+	return bts
+}

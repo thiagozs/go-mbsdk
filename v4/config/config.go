@@ -32,9 +32,9 @@ var EndPoints = map[string]string{
 	"ORDER_CANCEL_ALL": "https://api.mercadobitcoin.net/api/v4/accounts/{accountId}/cancel_all_open_orders",
 
 	// WALLET
-	"WALLET_DEPOSIT":  "https://api.mercadobitcoin.net/api/v4/accounts/{accountId}/wallet/{symbol}/deposits",              // TODO:
-	"WALLET_WITHDRAW": "https://api.mercadobitcoin.net/api/v4/accounts/{accountId}/wallet/{symbol}/withdrawals",           // TODO:
-	"WALLET_GETDRAW":  "https://api.mercadobitcoin.net/api/v4/accounts/{accountId}/wallet/{symbol}/withdraw/{withdrawId}", // TODO:
+	"WALLET_DEPOSIT":     "https://api.mercadobitcoin.net/api/v4/accounts/{accountId}/wallet/{symbol}/deposits",
+	"WALLET_WITHDRAW":    "https://api.mercadobitcoin.net/api/v4/accounts/{accountId}/wallet/{symbol}/withdraw", // TODO:
+	"WALLET_GETWITHDRAW": "https://api.mercadobitcoin.net/api/v4/accounts/{accountId}/wallet/{symbol}/withdraw/{withdrawId}",
 
 	// PUBLIC DATA
 	"ORDERBOOK": "https://api.mercadobitcoin.net/api/v4/{symbol}/orderbook",
